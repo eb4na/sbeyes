@@ -32,7 +32,7 @@ export function SignIn() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 12 }}>
           <Moon size={44} />
-          <Text style={styles.h1}>{mode === 'sign-in' ? 'Hey there' : 'Make an account'}</Text>
+          <Text style={styles.h1}>Dohyun Kim</Text>
           <Text style={[styles.muted, { fontSize: 15, lineHeight: 21, marginBottom: 8 }]}>
             {mode === 'sign-in'
               ? 'A place to say what’s on your mind, one thing at a time.'
