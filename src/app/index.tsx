@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
+import { useReaderName } from '@/lib/reader';
 import { supabase, type Note } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
@@ -14,6 +15,7 @@ export default function MyThings() {
   const { session, profile } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const reader = useReaderName();
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -60,6 +62,15 @@ export default function MyThings() {
             <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
               Complain about whatever you’re ready to complain about, even if it’s just one thing for now, so at least it’s out there and visible. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.
             </Text>
+            {reader && (
+              <View style={{ marginTop: 10, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8,
+                height: 34, paddingHorizontal: 14, borderRadius: 17, backgroundColor: 'rgba(255,226,154,0.12)' }}>
+                <Text style={{ fontSize: 15 }}>👁</Text>
+                <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 13, color: colors.accent }}>
+                  Only {reader} can see these
+                </Text>
+              </View>
+            )}
             <Pressable
               onPress={() => router.push('/letter')}
               accessibilityRole="button"

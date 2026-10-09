@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 
 import { EmotionPicker, StressMeter } from '@/components/feelings';
+import { useReaderName } from '@/lib/reader';
 import { supabase } from '@/lib/supabase';
 import { NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles } from '@/lib/theme';
@@ -19,6 +20,7 @@ export default function ThingEditor() {
   const [draft, setDraft] = useState<Draft>({ title: '', body: '', emotion: null, stress: null, held: false });
   const [status, setStatus] = useState<Status>('loading');
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const reader = useReaderName() ?? 'the other side';
 
   const latest = useRef(draft);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -151,8 +153,8 @@ export default function ThingEditor() {
               <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 16, color: colors.text }}>Keep to myself for now</Text>
               <Text style={[styles.muted, { lineHeight: 18 }]}>
                 {draft.held
-                  ? 'Only you can see this. Turn it off when you’re ready to share it.'
-                  : 'Shared — it shows up on the other side as a hidden card.'}
+                  ? `Only you can see this. Turn it off when you’re ready for ${reader} to see it.`
+                  : `Shared with ${reader}. It shows up as a hidden card until it’s opened.`}
               </Text>
             </View>
             <Switch
