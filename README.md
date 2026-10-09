@@ -69,6 +69,17 @@ open ios/*.xcworkspace
 In Xcode pick your team under Signing & Capabilities, choose
 *Any iOS Device*, then **Product → Archive → Distribute App → TestFlight**.
 
+## Android (install from a link)
+
+No Play Store account needed. Build an installable APK in Expo's cloud:
+
+```sh
+npx eas-cli@latest build --platform android --profile preview
+```
+
+When it finishes, EAS shows a link and QR code. Open it on the Android phone,
+download the APK and install it (allow "install unknown apps" when asked).
+
 ## Automatic TestFlight builds
 
 Every push to `main` runs `.github/workflows/testflight.yml`: it typechecks,
