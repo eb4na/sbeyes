@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StressMeter } from '@/components/feelings';
@@ -15,14 +15,17 @@ type Item = NoteWithAuthor & { number: number };
 export default function Reveal() {
   const { profile } = useAuth();
   const [notes, setNotes] = useState<NoteWithAuthor[]>([]);
+  const [writers, setWriters] = useState<{ id: string; name: string }[]>([]);
+  const [picked, setPicked] = useState<string | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('notes')
-      .select('*, profiles(name)')
-      .order('created_at', { ascending: true });
+    const [{ data }, { data: people }] = await Promise.all([
+      supabase.from('notes').select('*, profiles(name)').order('created_at', { ascending: true }),
+      supabase.from('profiles').select('id, name').eq('is_admin', false).neq('name', '').order('created_at', { ascending: true }),
+    ]);
     setNotes((data as NoteWithAuthor[]) ?? []);
+    setWriters(people ?? []);
   }, []);
 
   // Live: new things, edits and deletes show up without refreshing.
@@ -42,13 +45,13 @@ export default function Reveal() {
   }, [load]);
 
   // Number each writer's things in the order they were written.
-  const items = useMemo<Item[]>(() => {
+  const allItems = useMemo<Item[]>(() => {
     const counts: Record<string, number> = {};
     return notes.map((n) => ({ ...n, number: (counts[n.user_id] = (counts[n.user_id] ?? 0) + 1) }));
   }, [notes]);
+  const items = picked === 'all' ? allItems : allItems.filter((n) => n.user_id === picked);
 
   const hidden = items.filter((n) => !n.revealed_at).length;
-  const writers = [...new Set(items.map((n) => n.profiles?.name).filter(Boolean))].join(', ');
 
   async function reveal(id: string) {
     // Flip it right away; the server confirms and the live update reloads.
@@ -77,10 +80,6 @@ export default function Reveal() {
                 <Moon />
                 <Text style={styles.h1}>Things to read</Text>
               </View>
-              <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
-                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
-                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
-              </Pressable>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, paddingHorizontal: 10, borderRadius: 14, backgroundColor: 'rgba(255,226,154,0.14)' }}>
@@ -88,9 +87,26 @@ export default function Reveal() {
                 <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.accent }}>Live</Text>
               </View>
               <Text style={[styles.muted, { fontSize: 14 }]}>
-                {writers ? `From ${writers} · ` : ''}{hidden} hidden · {items.length - hidden} opened
+                {hidden} hidden · {items.length - hidden} opened
               </Text>
             </View>
+            {writers.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 10 }}>
+                {[{ id: 'all', label: 'Everyone', count: allItems.length },
+                  ...writers.map((w) => ({ id: w.id, label: w.name, count: allItems.filter((n) => n.user_id === w.id).length }))]
+                  .map((chip) => {
+                    const on = picked === chip.id;
+                    return (
+                      <Pressable key={chip.id} onPress={() => setPicked(chip.id)} accessibilityRole="button" accessibilityState={{ selected: on }}
+                        style={{ height: 40, paddingHorizontal: 16, borderRadius: 20, justifyContent: 'center', backgroundColor: on ? colors.accent : colors.card }}>
+                        <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 14, color: on ? colors.onAccent : colors.text }}>
+                          {chip.label} <Text style={{ color: on ? colors.onAccent : colors.muted }}>({chip.count})</Text>
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+              </ScrollView>
+            )}
           </View>
         }
         ListEmptyComponent={<Text style={styles.empty}>Nothing here yet. New things appear here the moment they’re written.</Text>}

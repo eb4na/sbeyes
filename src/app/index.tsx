@@ -52,12 +52,6 @@ export default function MyThings() {
                 <Moon />
                 <Text style={styles.h1}>Hey {profile?.name || 'there'}</Text>
               </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
-                  style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
-                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
-                </Pressable>
-              </View>
             </View>
             <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
               Complain about whatever you’re ready to complain about, even if it’s just one thing for now, so at least it’s out there and visible. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.

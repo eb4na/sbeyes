@@ -22,27 +22,21 @@ npx expo start
 
 Scan the QR code with the iPhone camera; it opens in the free **Expo Go** app.
 
-## Turn on Google sign-in (one-time)
-
-The app's **Continue with Google** button needs Google enabled in Supabase:
-
-1. **Google Cloud Console** → APIs & Services → Credentials → *Create
-   credentials → OAuth client ID* → type **Web application**.
-   Under *Authorized redirect URIs* add:
-   `https://dnxyasgufbaztleapunj.supabase.co/auth/v1/callback`
-   (If asked, set up the OAuth consent screen first; "External" is fine.)
-2. **Supabase** → Authentication → Sign In / Providers → **Google**: turn it on
-   and paste the Client ID and Client Secret.
-3. **Supabase** → Authentication → URL Configuration → *Redirect URLs*, add:
-   - `sbeyes://**` (TestFlight / real builds)
-   - `exp://**` (Expo Go and the Simulator while developing)
-   - `http://localhost:8081` (web preview)
 
 ## Who is who
 
-The reader's email lives in the private `private.settings` table (not in this
-repo). Signing up with that email makes the reader account; any other email
-becomes the writer, named Dohyun.
+There's no login. The first time the app opens on a device it creates a new
+anonymous user (Supabase → Authentication → Sign In / Providers → **Allow
+anonymous sign-ins** must be on), and the person picks a name. Names are unique.
+Every new device or browser is a new user.
+
+The reader is the user with `profiles.is_admin = true`; set it by name:
+
+```sql
+update public.profiles set is_admin = true where lower(name) = lower('<name>');
+```
+
+The reader sees everyone's things and can pick which person to read.
 
 ## Upload to TestFlight
 
