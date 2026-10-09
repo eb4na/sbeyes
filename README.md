@@ -68,6 +68,25 @@ open ios/*.xcworkspace
 In Xcode pick your team under Signing & Capabilities, choose
 *Any iOS Device*, then **Product → Archive → Distribute App → TestFlight**.
 
+## Automatic TestFlight builds
+
+Every push to `main` runs `.github/workflows/testflight.yml`: it typechecks,
+then builds on EAS and submits to TestFlight. One-time setup on your Mac:
+
+```sh
+npx eas-cli@latest login
+npx eas-cli@latest init          # links the Expo project (adds projectId to app.json) — commit it
+npx eas-cli@latest build --platform ios --profile production --auto-submit
+```
+
+The first build is interactive: sign in with your Apple ID and let EAS create
+the certificates and an App Store Connect API key. After that, builds run
+unattended.
+
+Then create a token at https://expo.dev/settings/access-tokens and add it on
+GitHub → repo **Settings → Secrets and variables → Actions** as `EXPO_TOKEN`.
+Until the secret exists the workflow only typechecks.
+
 ## How it works
 
 - Sign in with email + password, so the same account works on every device.

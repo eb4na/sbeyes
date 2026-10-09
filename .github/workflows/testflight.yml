@@ -1,0 +1,48 @@
+name: TestFlight
+
+# Every push to main: typecheck, then build the iOS app on EAS and submit it
+# to TestFlight. One-time setup is in README.md ("Automatic TestFlight builds").
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: testflight
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Skip build (EXPO_TOKEN not set yet)
+        if: env.EXPO_TOKEN == ''
+        run: echo "::warning::Add the EXPO_TOKEN repository secret to enable TestFlight builds. See README."
+
+      - uses: expo/expo-github-action@v8
+        if: env.EXPO_TOKEN != ''
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Builds run on Expo's macOS machines; --no-wait lets this job finish
+      # while EAS builds and then uploads to App Store Connect.
+      - name: Build and submit to TestFlight
+        if: env.EXPO_TOKEN != ''
+        run: eas build --platform ios --profile production --auto-submit --non-interactive --no-wait
