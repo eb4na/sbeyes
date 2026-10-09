@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase, type Note } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
+import { welcomeSeenKey } from '@/lib/welcome';
 
 // The writer's list: every individual thing they want to say.
 export default function MyThings() {
@@ -28,8 +30,19 @@ export default function MyThings() {
   // Reload whenever we come back from the editor.
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  // First visit on this device: show the welcome letter before anything else.
+  const [seenWelcome, setSeenWelcome] = useState<boolean | null>(null);
+  const userId = session?.user.id;
+  useEffect(() => {
+    if (!userId) return;
+    AsyncStorage.getItem(welcomeSeenKey(userId))
+      .then((v) => setSeenWelcome(v === '1'))
+      .catch(() => setSeenWelcome(true));
+  }, [userId]);
+
   // The reader (admin) gets their own screen.
   if (profile?.is_admin) return <Redirect href="/admin" />;
+  if (seenWelcome === false) return <Redirect href="/welcome" />;
 
   async function newThing() {
     const { data, error } = await supabase.from('notes').insert({}).select().single();
@@ -52,10 +65,16 @@ export default function MyThings() {
                 <Moon />
                 <Text style={styles.h1}>Hey {profile?.name || 'there'}</Text>
               </View>
-              <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
-                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
-                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
-              </Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable onPress={() => router.push('/welcome')} hitSlop={8} accessibilityLabel="Read the letter again"
+                  style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.accent }}>✉️ Letter</Text>
+                </Pressable>
+                <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
+                  style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                  <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
+                </Pressable>
+              </View>
             </View>
             <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
               Take your time. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.

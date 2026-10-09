@@ -40,6 +40,7 @@ function RootStack() {
       </Stack.Protected>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="note/[id]" options={{ title: '' }} />
         <Stack.Screen name="admin/index" options={{ headerShown: false }} />
         <Stack.Screen name="admin/[id]" options={{ title: '' }} />
