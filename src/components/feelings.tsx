@@ -1,6 +1,7 @@
+import Slider from '@react-native-community/slider';
 import { Pressable, Text, View } from 'react-native';
 
-import { colors, EMOTIONS, fonts, STRESS, type EmotionKey } from '@/lib/theme';
+import { colors, EMOTIONS, fonts, STRESS_MAX, STRESS_ZONES, stressZone, type EmotionKey } from '@/lib/theme';
 
 export function EmotionPicker({ value, onChange }: { value: string | null; onChange: (key: EmotionKey) => void }) {
   return (
@@ -36,8 +37,8 @@ export function EmotionPicker({ value, onChange }: { value: string | null; onCha
   );
 }
 
-// Five bubbles that fill up from a little stressed (yellow) to depressed (violet).
-// Pass onChange to make it tappable; leave it out to just display a level.
+// Stress out of 10. With onChange it's a slider (for writing); without, it
+// shows a small bar plus "6/10 · Overwhelmed".
 export function StressMeter({
   value,
   onChange,
@@ -47,58 +48,57 @@ export function StressMeter({
   onChange?: (level: number) => void;
   compact?: boolean;
 }) {
-  const current = STRESS.find((s) => s.level === value);
-  const size = compact ? 10 : 50;
+  const zone = value ? stressZone(value) : null;
 
-  return (
-    <View style={{ gap: compact ? 0 : 10, flexDirection: compact ? 'row' : 'column', alignItems: compact ? 'center' : 'stretch' }}>
-      <View style={{ flexDirection: 'row', gap: compact ? 4 : 10, justifyContent: compact ? 'flex-start' : 'space-between' }}>
-        {STRESS.map((s) => {
-          const filled = value != null && s.level <= value;
-          const bubble = (
-            <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                backgroundColor: filled ? current!.color : 'rgba(255,255,255,0.12)',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              {!compact && (
-                <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 17, color: filled ? colors.onAccent : colors.faint }}>
-                  {s.level}
-                </Text>
-              )}
-            </View>
-          );
-          return onChange ? (
-            <Pressable
-              key={s.level}
-              onPress={() => onChange(s.level)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: s.level === value }}
-              accessibilityLabel={`Stress ${s.level} of 5, ${s.label}`}
-              hitSlop={4}>
-              {bubble}
-            </Pressable>
-          ) : (
-            <View key={s.level}>{bubble}</View>
-          );
-        })}
-      </View>
-      {compact ? (
-        current && (
-          <Text style={{ marginLeft: 8, fontFamily: fonts.bodyHeavy, fontSize: 12, color: current.color }}>{current.label}</Text>
-        )
-      ) : (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Stressed</Text>
-          <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 14, color: current?.color ?? colors.muted }}>
-            {current ? current.label : 'Tap a bubble'}
+  if (onChange) {
+    return (
+      <View style={{ gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
+          <Text style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: zone?.color ?? colors.faint }}>
+            {value ?? '–'}<Text style={{ fontSize: 18, color: colors.faint }}>/{STRESS_MAX}</Text>
           </Text>
-          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Depressed</Text>
+          <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 16, color: zone?.color ?? colors.muted }}>
+            {zone ? zone.label : 'Slide to pick'}
+          </Text>
         </View>
+        <Slider
+          value={value ?? 1}
+          minimumValue={1}
+          maximumValue={STRESS_MAX}
+          step={1}
+          onValueChange={(v) => onChange(Math.round(v))}
+          minimumTrackTintColor={zone?.color ?? colors.faint}
+          maximumTrackTintColor="rgba(255,255,255,0.15)"
+          thumbTintColor={zone?.color ?? colors.text}
+          accessibilityLabel="Stress level out of 10"
+          style={{ height: 44 }}
+        />
+        <View style={{ flexDirection: 'row' }}>
+          {STRESS_ZONES.map((z) => (
+            <Text key={z.label}
+              style={{ flex: z.to - z.from + 1, textAlign: z.from === 1 ? 'left' : z.to === STRESS_MAX ? 'right' : 'center',
+                fontFamily: fonts.bodyBold, fontSize: 13, color: zone === z ? z.color : colors.faint }}>
+              {z.label}
+            </Text>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  const width = compact ? 56 : 160;
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 4 }}
+      accessibilityLabel={value ? `Stress ${value} of ${STRESS_MAX}, ${zone!.label}` : 'No stress level picked'}>
+      <View style={{ width, height: compact ? 6 : 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+        {value != null && (
+          <View style={{ width: `${(value / STRESS_MAX) * 100}%`, height: '100%', borderRadius: 5, backgroundColor: zone!.color }} />
+        )}
+      </View>
+      {zone && (
+        <Text numberOfLines={1} style={{ fontFamily: fonts.bodyHeavy, fontSize: compact ? 12 : 15, color: zone.color }}>
+          {value}/{STRESS_MAX} · {zone.label}
+        </Text>
       )}
     </View>
   );

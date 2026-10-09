@@ -61,13 +61,15 @@ const NO_EMOTION: Emotion = { key: 'sad', label: 'No feeling picked', emoji: 'ðŸ
 export const emotionFor = (key: string | null | undefined): Emotion =>
   EMOTIONS.find((e) => e.key === key) ?? NO_EMOTION;
 
-export const STRESS = [
-  { level: 1, label: 'A little stressed', color: '#FFE29A' },
-  { level: 2, label: 'Stressed', color: '#FFC98A' },
-  { level: 3, label: 'Very stressed', color: '#FFB078' },
-  { level: 4, label: 'Overwhelmed', color: '#FF8A80' },
-  { level: 5, label: 'Depressed', color: '#B49CFF' },
+// Stress is 1â€“10, in three zones.
+export const STRESS_MAX = 10;
+export const STRESS_ZONES = [
+  { from: 1, to: 4, label: 'Stressed', color: '#FFC98A' },
+  { from: 5, to: 7, label: 'Overwhelmed', color: '#FF8A80' },
+  { from: 8, to: 10, label: 'Depressed', color: '#B49CFF' },
 ];
+export const stressZone = (level: number) =>
+  STRESS_ZONES.find((z) => level >= z.from && level <= z.to) ?? STRESS_ZONES[STRESS_ZONES.length - 1];
 
 export const styles = StyleSheet.create({
   screen: { flex: 1 },
