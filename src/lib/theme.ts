@@ -25,6 +25,7 @@ export const fonts = {
   body: 'Nunito_600SemiBold',
   bodyBold: 'Nunito_700Bold',
   bodyHeavy: 'Nunito_800ExtraBold',
+  korean: 'Jua_400Regular', // rounded Hangul to match the display face
 };
 
 export type EmotionKey =

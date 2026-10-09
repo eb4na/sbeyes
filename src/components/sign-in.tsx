@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Moon, NightSky } from '@/components/night-sky';
@@ -32,7 +32,11 @@ export function SignIn() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 12 }}>
           <Moon size={44} />
-          <Text style={styles.h1}>Dohyun Kim</Text>
+          {/* Two pieces so 남자친구 wraps as a whole word, in a rounded Korean face. */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 10 }}>
+            <Text style={styles.h1}>Dohyun Kim</Text>
+            <Text style={[styles.h1, { fontFamily: fonts.korean, color: colors.accent }]}>남자친구</Text>
+          </View>
           <Text style={[styles.muted, { fontSize: 15, lineHeight: 21, marginBottom: 8 }]}>
             {mode === 'sign-in'
               ? 'A place to say what’s on your mind, one thing at a time.'
