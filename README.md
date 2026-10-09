@@ -1,4 +1,4 @@
-# Notes (sbeyes)
+# Dohyun Kim (sbeyes)
 
 An iPhone app (Expo / React Native) where people write notes that autosave and
 sync across devices. Admins get an **All notes** screen showing every writer's
