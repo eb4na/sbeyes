@@ -63,7 +63,8 @@ export default function MyThings() {
         renderItem={({ item, index }) => {
           const emotion = emotionFor(item.emotion);
           return (
-            <Pressable onPress={() => router.push(`/note/${item.id}`)} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Pressable onPress={() => router.push(`/note/${item.id}`)}
+              style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', opacity: item.held ? 0.6 : 1 }}>
               <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: emotion.color, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ fontSize: 22 }}>{emotion.emoji}</Text>
               </View>
@@ -72,8 +73,10 @@ export default function MyThings() {
                   <Text style={[styles.h2, { color: emotion.color, flex: 1 }]} numberOfLines={1}>
                     {item.title || `Thing #${index + 1}`}
                   </Text>
-                  {item.revealed_at && (
-                    <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.success }}>Opened</Text>
+                  {item.held && (
+                    <View style={{ height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.card, justifyContent: 'center' }}>
+                      <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.muted }}>🔒 Only you</Text>
+                    </View>
                   )}
                 </View>
                 {!!item.body && (

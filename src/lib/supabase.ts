@@ -37,6 +37,7 @@ export type Note = {
   emotion: string | null;
   stress: number | null;
   revealed_at: string | null;
+  held: boolean;
   created_at: string;
   updated_at: string;
 };

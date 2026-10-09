@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 
 import { EmotionPicker, StressMeter } from '@/components/feelings';
 import { supabase } from '@/lib/supabase';
@@ -9,13 +9,13 @@ import { colors, emotionFor, fonts, styles } from '@/lib/theme';
 // Save this long after the last change.
 const SAVE_DELAY_MS = 800;
 
-type Draft = { title: string; body: string; emotion: string | null; stress: number | null };
+type Draft = { title: string; body: string; emotion: string | null; stress: number | null; held: boolean };
 type Status = 'loading' | 'saved' | 'unsaved' | 'saving' | 'error';
 
 export default function ThingEditor() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
-  const [draft, setDraft] = useState<Draft>({ title: '', body: '', emotion: null, stress: null });
+  const [draft, setDraft] = useState<Draft>({ title: '', body: '', emotion: null, stress: null, held: false });
   const [status, setStatus] = useState<Status>('loading');
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
@@ -23,7 +23,7 @@ export default function ThingEditor() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    supabase.from('notes').select('title, body, emotion, stress').eq('id', id).single().then(({ data }) => {
+    supabase.from('notes').select('title, body, emotion, stress, held').eq('id', id).single().then(({ data }) => {
       if (data) {
         setDraft(data);
         latest.current = data;
@@ -141,6 +141,25 @@ export default function ThingEditor() {
           <View style={{ gap: 12 }}>
             <Text style={styles.label}>How stressed are you about it?</Text>
             <StressMeter value={draft.stress} onChange={(stress) => edit({ stress })} />
+          </View>
+
+          <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <Text style={{ fontSize: 24 }}>{draft.held ? '🔒' : '💬'}</Text>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 16, color: colors.text }}>Keep to myself for now</Text>
+              <Text style={[styles.muted, { lineHeight: 18 }]}>
+                {draft.held
+                  ? 'Only you can see this. Turn it off when you’re ready to share it.'
+                  : 'Shared — it shows up on the other side as a hidden card.'}
+              </Text>
+            </View>
+            <Switch
+              value={draft.held}
+              onValueChange={(held) => edit({ held })}
+              accessibilityLabel="Keep to myself for now"
+              trackColor={{ false: colors.border, true: colors.accent }}
+              thumbColor="#fff"
+            />
           </View>
         </ScrollView>
       )}

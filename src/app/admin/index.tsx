@@ -31,7 +31,13 @@ export default function Reveal() {
       .channel('reveal-notes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, load)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // A thing the writer holds back stops being visible to us, so no live
+    // event arrives for it; refresh now and then to drop it from the list.
+    const timer = setInterval(load, 15000);
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(timer);
+    };
   }, [load]);
 
   // Number each writer's things in the order they were written.

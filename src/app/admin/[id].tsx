@@ -37,7 +37,7 @@ export default function ReadThing() {
     else router.back();
   }
 
-  if (revisions && !note) return <Text style={styles.empty}>This was deleted.</Text>;
+  if (revisions && !note) return <Text style={styles.empty}>This isn’t available right now.</Text>;
   if (!note) return null;
 
   if (!note.revealed_at) {
