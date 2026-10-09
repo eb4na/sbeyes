@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { StressMeter } from '@/components/feelings';
 import { supabase, type NoteWithAuthor, type Revision } from '@/lib/supabase';
 import { NightSky } from '@/components/night-sky';
-import { colors, emotionFor, fonts, formatDate, styles } from '@/lib/theme';
+import { colors, editedSinceOpened, emotionFor, fonts, formatDate, styles } from '@/lib/theme';
 
 export default function ReadThing() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -93,7 +93,7 @@ export default function ReadThing() {
       </View>
 
       <Text style={styles.muted}>
-        Written {formatDate(note.created_at)} · last changed {formatDate(note.updated_at)} · opened {formatDate(note.revealed_at)}
+        {editedSinceOpened(note) ? '✏️ Edited after you opened it. ' : ''}Written {formatDate(note.created_at)} · last changed {formatDate(note.updated_at)} · opened {formatDate(note.revealed_at)}
       </Text>
 
       <Pressable onPress={() => setShowHistory(!showHistory)}>

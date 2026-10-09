@@ -127,9 +127,11 @@ export default function MyThings() {
                 {!!item.body && (
                   <Text style={[styles.text, { fontSize: 15, opacity: 0.9 }]} numberOfLines={2}>{item.body}</Text>
                 )}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', rowGap: 6, columnGap: 10, marginTop: 2 }}>
                   <StressMeter value={item.stress} compact />
-                  <Text style={styles.muted}>{timeAgo(item.updated_at)}</Text>
+                  <Text style={styles.muted} numberOfLines={1}>
+                    <Text style={{ color: colors.accent }}>✏️ Edit</Text> · {timeAgo(item.updated_at)}
+                  </Text>
                 </View>
               </View>
             </Pressable>

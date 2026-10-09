@@ -129,3 +129,7 @@ export function groupByEmotion<T extends { emotion: string | null }>(items: T[])
   });
   return sections.filter((s) => s.data.length > 0);
 }
+
+// True when a thing was changed after the reader opened it.
+export const editedSinceOpened = (n: { revealed_at: string | null; updated_at: string }) =>
+  !!n.revealed_at && new Date(n.updated_at).getTime() > new Date(n.revealed_at).getTime() + 1000;

@@ -9,7 +9,7 @@ import { signOut, useAuth } from '@/lib/auth';
 import { registerForPushNotifications } from '@/lib/push';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
-import { colors, emotionFor, fonts, groupByEmotion, styles, timeAgo, type EmotionSection } from '@/lib/theme';
+import { colors, editedSinceOpened, emotionFor, fonts, groupByEmotion, styles, timeAgo, type EmotionSection } from '@/lib/theme';
 
 type Item = NoteWithAuthor & { number: number };
 
@@ -184,6 +184,11 @@ function RevealedCard({ item }: { item: Item }) {
         </View>
         {!!item.emotion && (
           <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 13, color: emotion.color }}>Feeling {emotion.label.toLowerCase()}</Text>
+        )}
+        {editedSinceOpened(item) && (
+          <View style={{ alignSelf: 'flex-start', height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: 'rgba(255,226,154,0.14)', justifyContent: 'center' }}>
+            <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.accent }}>✏️ Edited after you opened it</Text>
+          </View>
         )}
         {!!item.body && <Text style={[styles.text, { fontSize: 15 }]} numberOfLines={3}>{item.body}</Text>}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
