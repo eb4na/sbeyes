@@ -126,7 +126,7 @@ export default function ThingEditor() {
             <TextInput
               value={draft.body}
               onChangeText={(body) => edit({ body })}
-              placeholder="Say it however it comes out. It doesn’t have to be perfect."
+              placeholder="Complain about it however it comes out. It doesn’t have to be perfect, it just has to be out there."
               placeholderTextColor={colors.faint}
               multiline
               autoFocus={!draft.title && !draft.body}

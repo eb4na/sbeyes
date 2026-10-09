@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { colors, styles } from '@/lib/theme';
 
 const HOW_IT_WORKS = [
-  { icon: '📝', text: 'Write each thing on its own card. One thing at a time, however it comes out.' },
+  { icon: '📝', text: 'Complain about whatever you’re ready to complain about, so at least it’s visible. One thing per card, however it comes out.' },
   { icon: '💭', text: 'Pick how it makes you feel and how stressed you are about it.' },
   { icon: '💾', text: 'It saves as you type. Come back and add to it whenever you want.' },
   { icon: '🌙', text: 'Every card arrives hidden on the other side and gets opened one at a time.' },

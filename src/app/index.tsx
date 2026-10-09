@@ -60,7 +60,7 @@ export default function MyThings() {
               </View>
             </View>
             <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
-              Take your time. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.
+              Complain about whatever you’re ready to complain about, even if it’s just one thing for now, so at least it’s out there and visible. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.
             </Text>
             <Pressable
               onPress={() => router.push('/letter')}
