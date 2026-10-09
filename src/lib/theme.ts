@@ -114,3 +114,18 @@ export function timeAgo(iso: string) {
   if (s < 86400) return `${Math.round(s / 3600)}h ago`;
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
+
+export type EmotionSection<T> = { key: string; label: string; emoji: string; color: string; data: T[] };
+
+// Groups items into one section per emotion, in the picker's order, with
+// "no feeling picked" last. Empty emotions are left out.
+export function groupByEmotion<T extends { emotion: string | null }>(items: T[]): EmotionSection<T>[] {
+  const sections: EmotionSection<T>[] = EMOTIONS.map((e) => ({
+    key: e.key, label: e.label, emoji: e.emoji, color: e.color, data: items.filter((i) => i.emotion === e.key),
+  }));
+  sections.push({
+    key: 'none', label: 'No feeling picked yet', emoji: '💬', color: colors.lavender,
+    data: items.filter((i) => !EMOTIONS.some((e) => e.key === i.emotion)),
+  });
+  return sections.filter((s) => s.data.length > 0);
+}

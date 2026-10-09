@@ -1,14 +1,15 @@
 import { Redirect, router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, RefreshControl, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EmotionHeader } from '@/components/emotion-header';
 import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
 import { useReaderName } from '@/lib/reader';
 import { supabase, type Note } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
-import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
+import { colors, emotionFor, fonts, groupByEmotion, styles, timeAgo } from '@/lib/theme';
 
 // The writer's list: every individual thing they want to say.
 export default function MyThings() {
@@ -30,6 +31,12 @@ export default function MyThings() {
   // Reload whenever we come back from the editor.
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  // Number things in the order they were written, then group them by emotion.
+  const sections = useMemo(
+    () => groupByEmotion(notes.map((n, i) => ({ ...n, number: i + 1 }))),
+    [notes],
+  );
+
   // The reader (admin) gets their own screen.
   if (profile?.is_admin) return <Redirect href="/admin" />;
 
@@ -41,10 +48,15 @@ export default function MyThings() {
   return (
     <NightSky>
     <SafeAreaView style={styles.screen}>
-      <FlatList
-        data={notes}
+      <SectionList
+        sections={sections}
         keyExtractor={(n) => n.id}
-        contentContainerStyle={{ padding: 22, paddingBottom: 140, gap: 14 }}
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{ padding: 22, paddingBottom: 140 }}
+        ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
+        renderSectionHeader={({ section }) => (
+          <EmotionHeader emoji={section.emoji} label={section.label} color={section.color} count={section.data.length} />
+        )}
         refreshControl={<RefreshControl tintColor={colors.accent} refreshing={refreshing}
           onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
         ListHeaderComponent={
@@ -90,7 +102,7 @@ export default function MyThings() {
         ListEmptyComponent={
           <Text style={styles.empty}>Nothing yet. Tap “New thing” when you’re ready to write the first one.</Text>
         }
-        renderItem={({ item, index }) => {
+        renderItem={({ item }) => {
           const emotion = emotionFor(item.emotion);
           return (
             <Pressable onPress={() => router.push(`/note/${item.id}`)}
@@ -101,7 +113,7 @@ export default function MyThings() {
               <View style={{ flex: 1, backgroundColor: emotion.tint, borderRadius: 26, borderTopLeftRadius: 8, padding: 16, gap: 6 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
                   <Text style={[styles.h2, { color: emotion.color, flex: 1 }]} numberOfLines={1}>
-                    {item.title || `Thing #${index + 1}`}
+                    {item.title || `Thing #${item.number}`}
                   </Text>
                   {item.held && (
                     <View style={{ height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.card, justifyContent: 'center' }}>

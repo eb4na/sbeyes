@@ -1,14 +1,15 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, SectionList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EmotionHeader } from '@/components/emotion-header';
 import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
 import { registerForPushNotifications } from '@/lib/push';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
-import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
+import { colors, emotionFor, fonts, groupByEmotion, styles, timeAgo, type EmotionSection } from '@/lib/theme';
 
 type Item = NoteWithAuthor & { number: number };
 
@@ -56,9 +57,13 @@ export default function Reveal() {
     const counts: Record<string, number> = {};
     return notes.map((n) => ({ ...n, number: (counts[n.user_id] = (counts[n.user_id] ?? 0) + 1) }));
   }, [notes]);
-  const items = picked === 'all' ? allItems : allItems.filter((n) => n.user_id === picked);
+  const items = useMemo(() => (picked === 'all' ? allItems : allItems.filter((n) => n.user_id === picked)), [allItems, picked]);
 
   const hidden = items.filter((n) => !n.revealed_at).length;
+
+  // Everything grouped by emotion. Hidden things show their emotion and stress
+  // level; only their words wait until they're revealed.
+  const sections = useMemo<EmotionSection<Item>[]>(() => groupByEmotion(items), [items]);
 
   async function reveal(id: string) {
     // Flip it right away; the server confirms and the live update reloads.
@@ -74,10 +79,15 @@ export default function Reveal() {
   return (
     <NightSky>
     <SafeAreaView style={styles.screen}>
-      <FlatList
-        data={items}
+      <SectionList
+        sections={sections}
         keyExtractor={(n) => n.id}
-        contentContainerStyle={{ padding: 22, paddingBottom: 60, gap: 14 }}
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{ padding: 22, paddingBottom: 60 }}
+        ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
+        renderSectionHeader={({ section }) => (
+          <EmotionHeader emoji={section.emoji} label={section.label} color={section.color} count={section.data.length} />
+        )}
         refreshControl={<RefreshControl tintColor={colors.accent} refreshing={refreshing}
           onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
         ListHeaderComponent={
@@ -132,18 +142,23 @@ export default function Reveal() {
 }
 
 function HiddenCard({ item, onReveal }: { item: Item; onReveal: () => void }) {
+  const emotion = emotionFor(item.emotion);
   return (
     <Pressable
       onPress={onReveal}
       accessibilityRole="button"
       accessibilityLabel={`Reveal thing number ${item.number} from ${item.profiles?.name ?? 'someone'}`}
-      style={{ backgroundColor: colors.cardSoft, borderRadius: 26, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border,
-        padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-      <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 24 }}>🌙</Text>
+      style={{ backgroundColor: colors.cardSoft, borderRadius: 26, borderWidth: 2, borderStyle: 'dashed', borderColor: emotion.color + '66',
+        padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+      <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: emotion.color, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 24 }}>{emotion.emoji}</Text>
       </View>
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: 4 }}>
         <Text style={[styles.h2, { fontSize: 18 }]}>Thing #{item.number}</Text>
+        <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 13, color: emotion.color }}>
+          {item.emotion ? `Feeling ${emotion.label.toLowerCase()}` : 'No feeling picked yet'}
+        </Text>
+        <StressMeter value={item.stress} compact />
         <Text style={styles.muted}>from {item.profiles?.name || 'someone'} · {timeAgo(item.created_at)}</Text>
       </View>
       <View style={{ height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.accent, justifyContent: 'center' }}>
