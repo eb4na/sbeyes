@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, Sc
 
 import { EmotionPicker, StressMeter } from '@/components/feelings';
 import { supabase } from '@/lib/supabase';
+import { NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles } from '@/lib/theme';
 
 // Save this long after the last change.
@@ -91,19 +92,20 @@ export default function ThingEditor() {
   const emotion = emotionFor(draft.emotion);
 
   return (
+    <NightSky>
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
       <Stack.Screen
         options={{
           headerTitle: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16,
-              backgroundColor: status === 'error' ? '#361614' : '#16301F' }}>
+              backgroundColor: status === 'error' ? 'rgba(255,138,128,0.16)' : 'rgba(166,240,184,0.14)' }}>
               <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 13, color: status === 'error' ? colors.danger : colors.success }}>
                 {statusText}
               </Text>
             </View>
           ),
           headerRight: () => (
-            <Pressable onPress={confirmDelete} hitSlop={10}>
+            <Pressable onPress={confirmDelete} hitSlop={10} style={{ paddingHorizontal: 4 }}>
               <Text style={{ color: colors.danger, fontFamily: fonts.bodyBold, fontSize: 16 }}>Delete</Text>
             </Pressable>
           ),
@@ -164,5 +166,6 @@ export default function ThingEditor() {
         </ScrollView>
       )}
     </KeyboardAvoidingView>
+    </NightSky>
   );
 }

@@ -61,7 +61,7 @@ export function StressMeter({
                 width: size,
                 height: size,
                 borderRadius: size / 2,
-                backgroundColor: filled ? current!.color : compact ? 'rgba(255,255,255,0.14)' : colors.card,
+                backgroundColor: filled ? current!.color : 'rgba(255,255,255,0.12)',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>

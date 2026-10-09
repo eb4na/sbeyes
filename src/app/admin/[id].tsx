@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { StressMeter } from '@/components/feelings';
 import { supabase, type NoteWithAuthor, type Revision } from '@/lib/supabase';
+import { NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, formatDate, styles } from '@/lib/theme';
 
 export default function ReadThing() {
@@ -42,24 +43,25 @@ export default function ReadThing() {
 
   if (!note.revealed_at) {
     return (
-      <View style={[styles.screen, { padding: 24, justifyContent: 'center', gap: 16 }]}>
+      <NightSky style={{ padding: 24, justifyContent: 'center', gap: 16 }}>
         <Text style={[styles.h1, { textAlign: 'center' }]}>Still hidden</Text>
         <Pressable style={styles.button} onPress={() => setRevealed(true)}>
           <Text style={styles.buttonText}>Reveal it</Text>
         </Pressable>
-      </View>
+      </NightSky>
     );
   }
 
   const emotion = emotionFor(note.emotion);
 
   return (
+    <NightSky>
     <ScrollView style={styles.screen} contentContainerStyle={{ padding: 20, paddingBottom: 60, gap: 18 }}>
       <Stack.Screen
         options={{
           title: note.profiles?.name ?? '',
           headerRight: () => (
-            <Pressable onPress={() => setRevealed(false)} hitSlop={10}>
+            <Pressable onPress={() => setRevealed(false)} hitSlop={10} style={{ paddingHorizontal: 4 }}>
               <Text style={{ color: colors.muted, fontFamily: fonts.bodyBold, fontSize: 15 }}>Hide again</Text>
             </Pressable>
           ),
@@ -115,5 +117,6 @@ export default function ReadThing() {
         );
       })}
     </ScrollView>
+    </NightSky>
   );
 }

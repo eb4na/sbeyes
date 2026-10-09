@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { Moon, NightSky } from '@/components/night-sky';
 import { colors, fonts, styles } from '@/lib/theme';
 
 export default function SignIn() {
@@ -37,10 +38,12 @@ export default function SignIn() {
   const canSubmit = email && password.length >= 6 && (mode === 'sign-in' || name.trim());
 
   return (
+    <NightSky>
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 12, maxWidth: 420, width: '100%', alignSelf: 'center' }}>
+        <Moon size={44} />
         <Text style={styles.h1}>
           {mode === 'sign-in' ? 'Hey there' : 'Make your space'}
         </Text>
@@ -91,5 +94,6 @@ export default function SignIn() {
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </NightSky>
   );
 }

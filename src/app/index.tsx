@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StressMeter } from '@/components/feelings';
 import { useAuth } from '@/lib/auth';
 import { supabase, type Note } from '@/lib/supabase';
+import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
 
 // The writer's list: every individual thing they want to say.
@@ -36,6 +37,7 @@ export default function MyThings() {
   }
 
   return (
+    <NightSky>
     <SafeAreaView style={styles.screen}>
       <FlatList
         data={notes}
@@ -46,7 +48,10 @@ export default function MyThings() {
         ListHeaderComponent={
           <View style={{ gap: 6, marginBottom: 10 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.h1}>Things to say</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Moon />
+                <Text style={styles.h1}>Things to say</Text>
+              </View>
               <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
                 style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
@@ -104,5 +109,6 @@ export default function MyThings() {
         </Pressable>
       </View>
     </SafeAreaView>
+    </NightSky>
   );
 }

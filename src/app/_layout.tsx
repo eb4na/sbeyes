@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
-import { colors, fonts } from '@/lib/theme';
+import { colors, fonts, sky } from '@/lib/theme';
 
 function RootStack() {
   const { session, loading } = useAuth();
@@ -29,11 +29,11 @@ function RootStack() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.bg },
+        headerStyle: { backgroundColor: sky[0] },
         headerShadowVisible: false,
         headerTintColor: colors.accent,
         headerTitleStyle: { color: colors.text, fontFamily: fonts.bodyHeavy },
-        contentStyle: { backgroundColor: colors.bg },
+        contentStyle: { backgroundColor: sky[0] },
       }}>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />

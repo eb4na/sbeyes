@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StressMeter } from '@/components/feelings';
 import { useAuth } from '@/lib/auth';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
+import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
 
 type Item = NoteWithAuthor & { number: number };
@@ -60,6 +61,7 @@ export default function Reveal() {
   }
 
   return (
+    <NightSky>
     <SafeAreaView style={styles.screen}>
       <FlatList
         data={items}
@@ -70,14 +72,17 @@ export default function Reveal() {
         ListHeaderComponent={
           <View style={{ gap: 6, marginBottom: 10 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.h1}>Things to read</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Moon />
+                <Text style={styles.h1}>Things to read</Text>
+              </View>
               <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
                 style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
               </Pressable>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, paddingHorizontal: 10, borderRadius: 14, backgroundColor: '#13283D' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, paddingHorizontal: 10, borderRadius: 14, backgroundColor: 'rgba(255,226,154,0.14)' }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent }} />
                 <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.accent }}>Live</Text>
               </View>
@@ -91,6 +96,7 @@ export default function Reveal() {
         renderItem={({ item }) => (item.revealed_at ? <RevealedCard item={item} /> : <HiddenCard item={item} onReveal={() => reveal(item.id)} />)}
       />
     </SafeAreaView>
+    </NightSky>
   );
 }
 
@@ -103,7 +109,7 @@ function HiddenCard({ item, onReveal }: { item: Item; onReveal: () => void }) {
       style={{ backgroundColor: colors.cardSoft, borderRadius: 26, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border,
         padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
       <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 24 }}>🙈</Text>
+        <Text style={{ fontSize: 24 }}>🌙</Text>
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[styles.h2, { fontSize: 18 }]}>Thing #{item.number}</Text>
