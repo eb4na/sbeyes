@@ -62,11 +62,11 @@ export const emotionFor = (key: string | null | undefined): Emotion =>
   EMOTIONS.find((e) => e.key === key) ?? NO_EMOTION;
 
 export const STRESS = [
-  { level: 1, label: 'Calm', color: '#A6F0B8' },
-  { level: 2, label: 'Uneasy', color: '#DDF0A0' },
-  { level: 3, label: 'Stressed', color: '#FFE29A' },
-  { level: 4, label: 'Very stressed', color: '#FFB078' },
-  { level: 5, label: 'Overwhelmed', color: '#FF8A80' },
+  { level: 1, label: 'A little stressed', color: '#FFE29A' },
+  { level: 2, label: 'Stressed', color: '#FFC98A' },
+  { level: 3, label: 'Very stressed', color: '#FFB078' },
+  { level: 4, label: 'Overwhelmed', color: '#FF8A80' },
+  { level: 5, label: 'Depressed', color: '#B49CFF' },
 ];
 
 export const styles = StyleSheet.create({

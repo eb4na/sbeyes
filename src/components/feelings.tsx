@@ -36,7 +36,7 @@ export function EmotionPicker({ value, onChange }: { value: string | null; onCha
   );
 }
 
-// Five bubbles that fill up from calm (green) to overwhelmed (red).
+// Five bubbles that fill up from a little stressed (yellow) to depressed (violet).
 // Pass onChange to make it tappable; leave it out to just display a level.
 export function StressMeter({
   value,
@@ -93,11 +93,11 @@ export function StressMeter({
         )
       ) : (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Calm</Text>
+          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Stressed</Text>
           <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 14, color: current?.color ?? colors.muted }}>
             {current ? current.label : 'Tap a bubble'}
           </Text>
-          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Overwhelmed</Text>
+          <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.faint }}>Depressed</Text>
         </View>
       )}
     </View>
