@@ -37,7 +37,8 @@ export function NightSky({ children, style }: { children: ReactNode; style?: Vie
           />
         ))}
       </View>
-      {children}
+      {/* Keep content phone-width and centered on wide (browser) screens. */}
+      <View style={{ flex: 1, width: '100%', maxWidth: 640, alignSelf: 'center' }}>{children}</View>
     </LinearGradient>
   );
 }
