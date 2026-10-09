@@ -94,6 +94,20 @@ Then create a token at https://expo.dev/settings/access-tokens and add it on
 GitHub → repo **Settings → Secrets and variables → Actions** as `EXPO_TOKEN`.
 Until the secret exists the workflow only typechecks.
 
+## Notifications
+
+The reader gets a push notification ("<name> wrote something new 🌙") the
+first time each thing is shared with words in it. It never includes the text.
+It needs the phone app on a real device (not the Simulator or the website),
+and an EAS project ID, once:
+
+```sh
+npx eas-cli@latest login
+npx eas-cli@latest init   # adds extra.eas.projectId to app.json; commit it
+```
+
+Then open the app as the reader and allow notifications.
+
 ## How it works
 
 - Sign in with email + password, so the same account works on every device.

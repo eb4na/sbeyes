@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
+import { registerForPushNotifications } from '@/lib/push';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
@@ -18,6 +19,12 @@ export default function Reveal() {
   const [writers, setWriters] = useState<{ id: string; name: string }[]>([]);
   const [picked, setPicked] = useState<string | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [pushNote, setPushNote] = useState<string | null>(null);
+
+  // Get a notification on this phone whenever a writer shares something new.
+  useEffect(() => {
+    if (profile?.is_admin) registerForPushNotifications().then(setPushNote);
+  }, [profile?.is_admin]);
 
   const load = useCallback(async () => {
     const [{ data }, { data: people }] = await Promise.all([
@@ -94,6 +101,9 @@ export default function Reveal() {
                 {hidden} hidden · {items.length - hidden} opened
               </Text>
             </View>
+            {pushNote && (
+              <Text style={[styles.muted, { marginTop: 6 }]}>🔕 {pushNote}</Text>
+            )}
             {writers.length > 0 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 10 }}>
                 {[{ id: 'all', label: 'Everyone', count: allItems.length },

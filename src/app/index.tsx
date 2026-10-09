@@ -126,10 +126,14 @@ export default function MyThings() {
           onPress={newThing}
           accessibilityLabel="Write a new thing"
           style={{
-            flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 28, borderRadius: 32,
+            flexDirection: 'row', alignItems: 'center', gap: 10, height: 64, paddingHorizontal: 28, borderRadius: 32,
             backgroundColor: colors.accent, shadowColor: colors.accent, shadowOpacity: 0.5, shadowRadius: 20, shadowOffset: { width: 0, height: 0 },
           }}>
-          <Text style={{ fontFamily: fonts.display, fontSize: 30, lineHeight: 34, color: colors.onAccent }}>+</Text>
+          {/* Drawn plus, so it sits exactly centered (a text "+" rides high in this font on iOS). */}
+          <View style={{ width: 18, height: 18, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ position: 'absolute', width: 18, height: 3.5, borderRadius: 2, backgroundColor: colors.onAccent }} />
+            <View style={{ position: 'absolute', width: 3.5, height: 18, borderRadius: 2, backgroundColor: colors.onAccent }} />
+          </View>
           <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 17, color: colors.onAccent }}>New thing</Text>
         </Pressable>
       </View>
