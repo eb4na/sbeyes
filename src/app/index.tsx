@@ -115,11 +115,14 @@ export default function MyThings() {
                   <Text style={[styles.h2, { color: emotion.color, flex: 1 }]} numberOfLines={1}>
                     {item.title || `Thing #${item.number}`}
                   </Text>
-                  {item.held && (
-                    <View style={{ height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.card, justifyContent: 'center' }}>
-                      <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.muted }}>🔒 Only you</Text>
-                    </View>
-                  )}
+                  {/* Whether the reader has opened it yet (or it's still private). */}
+                  <View style={{ height: 24, paddingHorizontal: 10, borderRadius: 12, justifyContent: 'center',
+                    backgroundColor: item.held ? colors.card : item.revealed_at ? 'rgba(166,240,184,0.16)' : 'rgba(255,255,255,0.07)' }}>
+                    <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12,
+                      color: item.held ? colors.muted : item.revealed_at ? colors.success : colors.faint }}>
+                      {item.held ? '🔒 Only you' : item.revealed_at ? '✓ Opened' : 'Not opened yet'}
+                    </Text>
+                  </View>
                 </View>
                 {!!item.body && (
                   <Text style={[styles.text, { fontSize: 15, opacity: 0.9 }]} numberOfLines={2}>{item.body}</Text>
