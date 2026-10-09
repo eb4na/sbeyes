@@ -3,9 +3,25 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 
 import { supabase, type Profile } from './supabase';
 
-// No login: the first launch on a device creates an anonymous user, and the
-// device keeps that session. Every new device or browser is a new user, who
-// then picks a unique name. The reader is whichever user has profiles.is_admin.
+// Username + password accounts (no email). register() in the database creates
+// the account; signing in uses the username's placeholder address. The reader
+// is whichever user has profiles.is_admin.
+
+const usernameEmail = (username: string) => `${username.trim().toLowerCase()}@users.sbeyes.example`;
+
+export async function signIn(username: string, password: string): Promise<string | null> {
+  const { error } = await supabase.auth.signInWithPassword({ email: usernameEmail(username), password });
+  if (!error) return null;
+  return error.message.toLowerCase().includes('invalid') ? 'Wrong username or password.' : error.message;
+}
+
+export async function signUp(username: string, password: string): Promise<string | null> {
+  const { error } = await supabase.rpc('register', { p_username: username.trim(), p_password: password });
+  if (error) return error.message;
+  return signIn(username, password);
+}
+
+export const signOut = () => supabase.auth.signOut();
 
 type AuthState = {
   session: Session | null;
@@ -23,19 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) {
-        setSession(data.session);
-        return;
-      }
-      const { data: created, error: signInError } = await supabase.auth.signInAnonymously();
-      if (signInError) setError(signInError.message);
-      else setSession(created.session);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setChecked(true);
     });
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (next) setSession(next);
+      setSession(next);
+      if (!next) setProfile(null);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -54,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { refreshProfile(); }, [refreshProfile]);
 
-  const loading = !error && (!session || !profile);
+  const loading = !error && (!checked || (!!session && !profile));
   return (
     <AuthContext.Provider value={{ session, profile, loading, error, refreshProfile }}>{children}</AuthContext.Provider>
   );

@@ -5,12 +5,12 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 import { NightSky } from '@/components/night-sky';
-import { PickName } from '@/components/pick-name';
+import { SignIn } from '@/components/sign-in';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { colors, fonts, sky, styles } from '@/lib/theme';
 
 function RootStack() {
-  const { loading, error, profile } = useAuth();
+  const { loading, error, session } = useAuth();
   const [fontsLoaded] = useFonts({
     Baloo2_700Bold,
     Baloo2_800ExtraBold,
@@ -36,8 +36,7 @@ function RootStack() {
     );
   }
 
-  // First launch on this device: choose a name before anything else.
-  if (!profile?.name.trim()) return <PickName />;
+  if (!session) return <SignIn />;
 
   return (
     <Stack

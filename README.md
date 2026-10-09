@@ -25,15 +25,16 @@ Scan the QR code with the iPhone camera; it opens in the free **Expo Go** app.
 
 ## Who is who
 
-There's no login. The first time the app opens on a device it creates a new
-anonymous user (Supabase → Authentication → Sign In / Providers → **Allow
-anonymous sign-ins** must be on), and the person picks a name. Names are unique.
-Every new device or browser is a new user.
+Accounts are a username and password, with no email. `register()` in the
+database creates the account (usernames are unique), and the app signs in
+with the username. Behind the scenes Supabase needs an email, so each
+username maps to a placeholder `@users.sbeyes.example` address that is never
+mailed.
 
-The reader is the user with `profiles.is_admin = true`; set it by name:
+The reader is the user with `profiles.is_admin = true`; set it by username:
 
 ```sql
-update public.profiles set is_admin = true where lower(name) = lower('<name>');
+update public.profiles set is_admin = true where lower(name) = lower('<username>');
 ```
 
 The reader sees everyone's things and can pick which person to read.

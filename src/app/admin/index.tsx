@@ -4,7 +4,7 @@ import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StressMeter } from '@/components/feelings';
-import { useAuth } from '@/lib/auth';
+import { signOut, useAuth } from '@/lib/auth';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
@@ -80,6 +80,10 @@ export default function Reveal() {
                 <Moon />
                 <Text style={styles.h1}>Things to read</Text>
               </View>
+              <Pressable onPress={signOut} hitSlop={8}
+                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
+              </Pressable>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, paddingHorizontal: 10, borderRadius: 14, backgroundColor: 'rgba(255,226,154,0.14)' }}>
