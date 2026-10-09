@@ -1,26 +1,32 @@
 {
   "name": "sbeyes",
   "version": "1.0.0",
-  "description": "Notes app: writers autosave notes, admin sees all of them",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/eb4na/sbeyes.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/eb4na/sbeyes/issues"
-  },
-  "homepage": "https://github.com/eb4na/sbeyes#readme",
+  "main": "expo-router/entry",
   "dependencies": {
-    "express": "^4.22.3"
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.117.3",
+    "expo": "~57.0.27",
+    "expo-constants": "~57.0.21",
+    "expo-linking": "~57.0.12",
+    "expo-router": "~57.0.25",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "~0.21.0"
   },
-  "engines": {
-    "node": ">=22.13"
-  }
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint"
+  },
+  "private": true
 }
