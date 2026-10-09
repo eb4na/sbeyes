@@ -1,32 +1,31 @@
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import { EmotionPicker, StressMeter } from '@/components/feelings';
 import { supabase } from '@/lib/supabase';
-import { useTheme } from '@/lib/theme';
+import { colors, emotionFor, fonts, styles } from '@/lib/theme';
 
-// Save this long after the last keystroke.
+// Save this long after the last change.
 const SAVE_DELAY_MS = 800;
 
+type Draft = { title: string; body: string; emotion: string | null; stress: number | null };
 type Status = 'loading' | 'saved' | 'unsaved' | 'saving' | 'error';
 
-export default function NoteEditor() {
+export default function ThingEditor() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors, styles } = useTheme();
   const navigation = useNavigation();
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [draft, setDraft] = useState<Draft>({ title: '', body: '', emotion: null, stress: null });
   const [status, setStatus] = useState<Status>('loading');
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
-  const latest = useRef({ title, body });
+  const latest = useRef(draft);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    supabase.from('notes').select('title, body').eq('id', id).single().then(({ data }) => {
+    supabase.from('notes').select('title, body, emotion, stress').eq('id', id).single().then(({ data }) => {
       if (data) {
-        setTitle(data.title);
-        setBody(data.body);
+        setDraft(data);
         latest.current = data;
       }
       setStatus('saved');
@@ -46,10 +45,9 @@ export default function NoteEditor() {
     }
   }
 
-  function edit(next: { title?: string; body?: string }) {
+  function edit(next: Partial<Draft>) {
     latest.current = { ...latest.current, ...next };
-    if (next.title !== undefined) setTitle(next.title);
-    if (next.body !== undefined) setBody(next.body);
+    setDraft(latest.current);
     setStatus('unsaved');
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(save, SAVE_DELAY_MS);
@@ -73,9 +71,9 @@ export default function NoteEditor() {
       router.back();
     };
     if (Platform.OS === 'web') {
-      if (window.confirm('Delete this note?')) remove();
+      if (window.confirm('Delete this thing?')) remove();
     } else {
-      Alert.alert('Delete this note?', undefined, [
+      Alert.alert('Delete this thing?', undefined, [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Delete', style: 'destructive', onPress: remove },
       ]);
@@ -84,48 +82,67 @@ export default function NoteEditor() {
 
   const statusText = {
     loading: 'Loading…',
-    unsaved: 'Editing…',
+    unsaved: 'Writing…',
     saving: 'Saving…',
     saved: savedAt ? `Saved ${savedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'Saved',
     error: 'Offline — will retry',
   }[status];
 
+  const emotion = emotionFor(draft.emotion);
+
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
       <Stack.Screen
         options={{
-          title: statusText,
-          headerTitleStyle: { color: colors.muted, fontSize: 14, fontWeight: '400' },
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16,
+              backgroundColor: status === 'error' ? '#361614' : '#16301F' }}>
+              <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 13, color: status === 'error' ? colors.danger : colors.success }}>
+                {statusText}
+              </Text>
+            </View>
+          ),
           headerRight: () => (
             <Pressable onPress={confirmDelete} hitSlop={10}>
-              <Text style={{ color: colors.danger, fontSize: 16 }}>Delete</Text>
+              <Text style={{ color: colors.danger, fontFamily: fonts.bodyBold, fontSize: 16 }}>Delete</Text>
             </Pressable>
           ),
         }}
       />
       {status === 'loading' ? (
-        <ActivityIndicator style={{ marginTop: 40 }} />
+        <ActivityIndicator color={colors.accent} style={{ marginTop: 40 }} />
       ) : (
-        <View style={{ flex: 1, padding: 16, gap: 8 }}>
-          <TextInput
-            value={title}
-            onChangeText={(t) => edit({ title: t })}
-            placeholder="Title"
-            placeholderTextColor={colors.muted}
-            style={{ fontSize: 26, fontWeight: '700', color: colors.text, paddingVertical: 6 }}
-          />
-          <TextInput
-            value={body}
-            onChangeText={(b) => edit({ body: b })}
-            placeholder="Start writing…"
-            placeholderTextColor={colors.muted}
-            multiline
-            autoFocus={!title && !body}
-            textAlignVertical="top"
-            style={[styles.text, { flex: 1, lineHeight: 24 }]}
-          />
-        </View>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60, gap: 22 }} keyboardShouldPersistTaps="handled">
+          <View style={{ backgroundColor: emotion.tint, borderRadius: 30, borderTopLeftRadius: 10, padding: 20, gap: 8 }}>
+            <TextInput
+              value={draft.title}
+              onChangeText={(title) => edit({ title })}
+              placeholder="In a few words…"
+              placeholderTextColor={colors.faint}
+              style={{ fontFamily: fonts.display, fontSize: 26, color: emotion.color, paddingVertical: 4 }}
+            />
+            <TextInput
+              value={draft.body}
+              onChangeText={(body) => edit({ body })}
+              placeholder="Say it however it comes out. It doesn’t have to be perfect."
+              placeholderTextColor={colors.faint}
+              multiline
+              autoFocus={!draft.title && !draft.body}
+              textAlignVertical="top"
+              style={[styles.text, { minHeight: 160, fontSize: 17, lineHeight: 25 }]}
+            />
+          </View>
+
+          <View style={{ gap: 12 }}>
+            <Text style={styles.label}>How does this make you feel?</Text>
+            <EmotionPicker value={draft.emotion} onChange={(e) => edit({ emotion: e })} />
+          </View>
+
+          <View style={{ gap: 12 }}>
+            <Text style={styles.label}>How stressed are you about it?</Text>
+            <StressMeter value={draft.stress} onChange={(stress) => edit({ stress })} />
+          </View>
+        </ScrollView>
       )}
     </KeyboardAvoidingView>
   );

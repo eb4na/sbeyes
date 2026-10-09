@@ -4,10 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { useTheme } from '@/lib/theme';
+import { colors, fonts, styles } from '@/lib/theme';
 
 export default function SignIn() {
-  const { colors, styles } = useTheme();
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,11 +41,11 @@ export default function SignIn() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 12, maxWidth: 420, width: '100%', alignSelf: 'center' }}>
-        <Text style={{ fontSize: 30, fontWeight: '700', color: colors.text }}>
-          {mode === 'sign-in' ? 'Welcome back' : 'Start writing'}
+        <Text style={styles.h1}>
+          {mode === 'sign-in' ? 'Hey there' : 'Make your space'}
         </Text>
-        <Text style={[styles.muted, { marginBottom: 8 }]}>
-          Your notes save automatically and sync across your devices.
+        <Text style={[styles.muted, { marginBottom: 8, fontSize: 15, lineHeight: 21 }]}>
+          A place to say what’s on your mind, one thing at a time. Everything saves as you go.
         </Text>
 
         <Pressable
@@ -54,11 +53,11 @@ export default function SignIn() {
           disabled={busy}
           style={{
             flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-            backgroundColor: '#fff', borderColor: '#dadce0', borderWidth: 1, borderRadius: 10,
+            backgroundColor: '#fff', borderColor: '#dadce0', borderWidth: 1, borderRadius: 28,
             paddingVertical: 13, opacity: busy ? 0.5 : 1,
           }}>
           <Image source={require('../../assets/google-g.png')} style={{ width: 20, height: 20 }} />
-          <Text style={{ color: '#1f1f1f', fontSize: 16, fontWeight: '600' }}>Continue with Google</Text>
+          <Text style={{ color: '#1f1f1f', fontSize: 16, fontFamily: fonts.bodyHeavy }}>Continue with Google</Text>
         </Pressable>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
@@ -86,7 +85,7 @@ export default function SignIn() {
         </Pressable>
 
         <Pressable onPress={() => { setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in'); setMessage(null); }}>
-          <Text style={{ color: colors.accent, textAlign: 'center', padding: 8, fontSize: 15 }}>
+          <Text style={{ color: colors.accent, textAlign: 'center', padding: 8, fontSize: 15, fontFamily: fonts.bodyBold }}>
             {mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in'}
           </Text>
         </Pressable>

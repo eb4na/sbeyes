@@ -1,14 +1,15 @@
-import { router, Stack, useFocusEffect } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { StressMeter } from '@/components/feelings';
 import { useAuth } from '@/lib/auth';
 import { supabase, type Note } from '@/lib/supabase';
-import { formatDate, useTheme } from '@/lib/theme';
+import { colors, emotionFor, fonts, styles, timeAgo } from '@/lib/theme';
 
-export default function MyNotes() {
-  const { colors, styles } = useTheme();
+// The writer's list: every individual thing they want to say.
+export default function MyThings() {
   const { session, profile } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -19,54 +20,84 @@ export default function MyNotes() {
       .from('notes')
       .select('*')
       .eq('user_id', session.user.id)
-      .order('updated_at', { ascending: false });
+      .order('created_at', { ascending: true });
     setNotes(data ?? []);
   }, [session]);
 
   // Reload whenever we come back from the editor.
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  async function newNote() {
+  // The reader (admin) gets their own screen.
+  if (profile?.is_admin) return <Redirect href="/admin" />;
+
+  async function newThing() {
     const { data, error } = await supabase.from('notes').insert({}).select().single();
     if (!error && data) router.push(`/note/${data.id}`);
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
-      <Stack.Screen
-        options={{
-          title: profile?.name ? `${profile.name}'s notes` : 'My notes',
-          headerLeft: () => (
-            <Pressable onPress={() => supabase.auth.signOut()} hitSlop={10}>
-              <Text style={{ color: colors.accent, fontSize: 16 }}>Sign out</Text>
-            </Pressable>
-          ),
-          headerRight: () =>
-            profile?.is_admin ? (
-              <Pressable onPress={() => router.push('/admin')} hitSlop={10}>
-                <Text style={{ color: colors.accent, fontSize: 16 }}>All notes</Text>
-              </Pressable>
-            ) : null,
-        }}
-      />
+    <SafeAreaView style={styles.screen}>
       <FlatList
         data={notes}
         keyExtractor={(n) => n.id}
-        refreshControl={<RefreshControl refreshing={refreshing}
+        contentContainerStyle={{ padding: 22, paddingBottom: 140, gap: 14 }}
+        refreshControl={<RefreshControl tintColor={colors.accent} refreshing={refreshing}
           onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
-        ListEmptyComponent={<Text style={styles.empty}>No notes yet. Tap “New note” to start.</Text>}
-        renderItem={({ item }) => (
-          <Pressable style={styles.row} onPress={() => router.push(`/note/${item.id}`)}>
-            <Text style={styles.rowTitle} numberOfLines={1}>{item.title || 'Untitled'}</Text>
-            <Text style={styles.muted} numberOfLines={1}>
-              {formatDate(item.updated_at)}{item.body ? ` · ${item.body.replace(/\s+/g, ' ')}` : ''}
+        ListHeaderComponent={
+          <View style={{ gap: 6, marginBottom: 10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={styles.h1}>Things to say</Text>
+              <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
+                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
+              </Pressable>
+            </View>
+            <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
+              One thing at a time. Everything saves as you type, and stays hidden until it’s opened on the other side.
             </Text>
-          </Pressable>
-        )}
+          </View>
+        }
+        ListEmptyComponent={
+          <Text style={styles.empty}>Nothing yet. Tap the + to write the first thing on your mind.</Text>
+        }
+        renderItem={({ item, index }) => {
+          const emotion = emotionFor(item.emotion);
+          return (
+            <Pressable onPress={() => router.push(`/note/${item.id}`)} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+              <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: emotion.color, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 22 }}>{emotion.emoji}</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: emotion.tint, borderRadius: 26, borderTopLeftRadius: 8, padding: 16, gap: 6 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+                  <Text style={[styles.h2, { color: emotion.color, flex: 1 }]} numberOfLines={1}>
+                    {item.title || `Thing #${index + 1}`}
+                  </Text>
+                  {item.revealed_at && (
+                    <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.success }}>Opened</Text>
+                  )}
+                </View>
+                {!!item.body && (
+                  <Text style={[styles.text, { fontSize: 15, opacity: 0.9 }]} numberOfLines={2}>{item.body}</Text>
+                )}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                  <StressMeter value={item.stress} compact />
+                  <Text style={styles.muted}>{timeAgo(item.updated_at)}</Text>
+                </View>
+              </View>
+            </Pressable>
+          );
+        }}
       />
-      <View style={{ padding: 16 }}>
-        <Pressable style={styles.button} onPress={newNote}>
-          <Text style={styles.buttonText}>New note</Text>
+      <View style={{ position: 'absolute', bottom: 34, left: 0, right: 0, alignItems: 'center' }}>
+        <Pressable
+          onPress={newThing}
+          accessibilityLabel="Write a new thing"
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 28, borderRadius: 32,
+            backgroundColor: colors.accent, shadowColor: colors.accent, shadowOpacity: 0.5, shadowRadius: 20, shadowOffset: { width: 0, height: 0 },
+          }}>
+          <Text style={{ fontFamily: fonts.display, fontSize: 30, lineHeight: 34, color: colors.onAccent }}>+</Text>
+          <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 17, color: colors.onAccent }}>New thing</Text>
         </Pressable>
       </View>
     </SafeAreaView>

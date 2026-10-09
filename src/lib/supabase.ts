@@ -34,6 +34,9 @@ export type Note = {
   user_id: string;
   title: string;
   body: string;
+  emotion: string | null;
+  stress: number | null;
+  revealed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -45,6 +48,8 @@ export type Revision = {
   note_id: string;
   title: string;
   body: string;
+  emotion: string | null;
+  stress: number | null;
   saved_at: string;
 };
 

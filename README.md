@@ -1,8 +1,10 @@
 # Dohyun Kim (sbeyes)
 
-An iPhone app (Expo / React Native) where people write notes that autosave and
-sync across devices. Admins get an **All notes** screen showing every writer's
-notes live, with saved versions so you can see how each note progressed.
+An iPhone app (Expo / React Native) for saying hard things one at a time.
+The writer adds each thing as its own card, with an emotion and a 1–5 stress
+level; it autosaves as they type. The reader (admin) sees every card arrive
+**hidden**, taps to reveal it, and the reveal is remembered across devices.
+Revealed cards update live and keep earlier versions.
 
 Backend: Supabase project `sbeyes` (schema in `supabase/migrations/`).
 
@@ -41,7 +43,7 @@ The app's **Continue with Google** button needs Google enabled in Supabase:
    where id = (select id from auth.users where email = 'you@example.com');
    ```
 
-3. Sign out and back in. An **All notes** button appears top-right.
+3. Sign out and back in. You'll land on **Things to read**.
 
 ## Upload to TestFlight
 
