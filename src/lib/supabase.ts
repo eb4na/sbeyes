@@ -14,7 +14,10 @@ export const supabase = createClient(url, key, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // On web the OAuth redirect lands back on the page with ?code=...; let the
+    // client pick it up. Native apps exchange the code themselves (see auth.tsx).
+    detectSessionInUrl: Platform.OS === 'web',
+    flowType: 'pkce',
   },
 });
 

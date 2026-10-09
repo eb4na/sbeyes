@@ -35,6 +35,8 @@ function RootStack() {
         <Stack.Screen name="admin/index" options={{ title: 'All notes' }} />
         <Stack.Screen name="admin/[id]" options={{ title: '' }} />
       </Stack.Protected>
+      {/* Listed last so it is never the fallback screen when signed out. */}
+      <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
     </Stack>
   );
 }

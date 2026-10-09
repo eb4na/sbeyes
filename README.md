@@ -15,6 +15,22 @@ npx expo start
 
 Scan the QR code with the iPhone camera; it opens in the free **Expo Go** app.
 
+## Turn on Google sign-in (one-time)
+
+The app's **Continue with Google** button needs Google enabled in Supabase:
+
+1. **Google Cloud Console** → APIs & Services → Credentials → *Create
+   credentials → OAuth client ID* → type **Web application**.
+   Under *Authorized redirect URIs* add:
+   `https://dnxyasgufbaztleapunj.supabase.co/auth/v1/callback`
+   (If asked, set up the OAuth consent screen first; "External" is fine.)
+2. **Supabase** → Authentication → Sign In / Providers → **Google**: turn it on
+   and paste the Client ID and Client Secret.
+3. **Supabase** → Authentication → URL Configuration → *Redirect URLs*, add:
+   - `sbeyes://**` (TestFlight / real builds)
+   - `exp://**` (Expo Go and the Simulator while developing)
+   - `http://localhost:8081` (web preview)
+
 ## Make yourself the admin
 
 1. Create an account in the app.

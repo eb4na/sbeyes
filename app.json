@@ -38,7 +38,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#5266E8"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "scheme": "sbeyes"
   }
