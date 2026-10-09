@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Notes</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="login" class="center" hidden>
+    <h1>Admin</h1>
+    <input id="password" type="password" placeholder="Admin password">
+    <button class="primary" id="enter">Sign in</button>
+    <p class="muted" id="loginError"></p>
+  </div>
+
+  <div id="app" hidden>
+    <header>
+      <h1>All notes</h1>
+      <input id="search" placeholder="Search notes or writers" style="max-width:260px">
+      <span class="muted" id="live">Live</span>
+      <button id="logout">Sign out</button>
+    </header>
+    <div class="layout">
+      <nav class="sidebar" id="list"></nav>
+      <main class="editor" id="detail">
+        <div class="empty">Select a note to read it.</div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // How often to pull new notes/edits from writers' devices.
+    const REFRESH_MS = 5000;
+
+    let password = null;
+    try { password = sessionStorage.getItem('adminPassword'); } catch {}
+    let notes = [];
+    let currentId = null;
+    let historyOpen = false;
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (t) => new Date(t).toLocaleString();
+
+    async function api(url) {
+      const res = await fetch(url, { headers: { 'X-Admin-Password': password || '' } });
+      if (!res.ok) throw Object.assign(new Error(res.statusText), { status: res.status });
+      return res.json();
+    }
+
+    async function signIn() {
+      try {
+        notes = await api('/api/admin/notes');
+      } catch (e) {
+        $('app').hidden = true;
+        $('login').hidden = false;
+        $('loginError').textContent = password ? 'Wrong password.' : '';
+        try { sessionStorage.removeItem('adminPassword'); } catch {}
+        return;
+      }
+      try { sessionStorage.setItem('adminPassword', password); } catch {}
+      $('login').hidden = true;
+      $('app').hidden = false;
+      render();
+      setInterval(refresh, REFRESH_MS);
+    }
+
+    $('enter').onclick = () => { password = $('password').value; signIn(); };
+    $('password').onkeydown = (e) => { if (e.key === 'Enter') $('enter').click(); };
+    $('logout').onclick = () => { try { sessionStorage.removeItem('adminPassword'); } catch {} location.reload(); };
+    $('search').oninput = renderList;
+
+    async function refresh() {
+      try {
+        notes = await api('/api/admin/notes');
+        $('live').textContent = 'Live · updated ' + new Date().toLocaleTimeString();
+        render();
+      } catch {
+        $('live').textContent = 'Offline — retrying';
+      }
+    }
+
+    function render() {
+      renderList();
+      if (currentId && !historyOpen) renderDetail();
+    }
+
+    function renderList() {
+      const q = $('search').value.toLowerCase();
+      const shown = notes.filter((n) =>
+        !q || [n.title, n.body, n.writer_name].some((s) => s.toLowerCase().includes(q)));
+      $('list').innerHTML = shown.length ? '' : '<div class="empty">No notes yet</div>';
+      for (const n of shown) {
+        const el = document.createElement('div');
+        el.className = 'list-item' + (n.id === currentId ? ' active' : '');
+        el.innerHTML = '<div class="title"></div><div class="muted"></div>';
+        el.querySelector('.title').textContent = n.title || 'Untitled';
+        el.querySelector('.muted').textContent = `${n.writer_name} · ${fmt(n.updated_at)}`;
+        el.onclick = () => { currentId = n.id; historyOpen = false; renderList(); renderDetail(); };
+        $('list').appendChild(el);
+      }
+    }
+
+    function renderDetail() {
+      const n = notes.find((x) => x.id === currentId);
+      if (!n) { $('detail').innerHTML = '<div class="empty">This note was deleted.</div>'; return; }
+      $('detail').innerHTML = `
+        <h2 style="margin:0" id="dTitle"></h2>
+        <div class="muted" id="dMeta"></div>
+        <div class="note-view" id="dBody"></div>
+        <div class="toolbar"><button id="history">Show saved versions (${n.revision_count})</button></div>
+        <div id="revisions"></div>`;
+      $('dTitle').textContent = n.title || 'Untitled';
+      $('dMeta').textContent = `By ${n.writer_name} · started ${fmt(n.created_at)} · last saved ${fmt(n.updated_at)}`;
+      $('dBody').textContent = n.body || '(empty)';
+      $('history').onclick = showHistory;
+    }
+
+    async function showHistory() {
+      historyOpen = true;
+      const revs = await api(`/api/admin/notes/${currentId}/revisions`);
+      $('history').textContent = 'Hide saved versions';
+      $('history').onclick = () => { historyOpen = false; renderDetail(); };
+      $('revisions').innerHTML = revs.length ? '' : '<p class="muted">No saved versions yet.</p>';
+      for (const r of revs) {
+        const el = document.createElement('div');
+        el.className = 'revision';
+        el.innerHTML = '<div class="muted"></div><div class="note-view"></div>';
+        el.querySelector('.muted').textContent = `${fmt(r.saved_at)} — ${r.title || 'Untitled'}`;
+        el.querySelector('.note-view').textContent = r.body || '(empty)';
+        $('revisions').appendChild(el);
+      }
+    }
+
+    signIn();
+  </script>
+</body>
+</html>

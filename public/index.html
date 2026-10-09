@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notes</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Shown until the writer has a name -->
+  <div id="signup" class="center" hidden>
+    <h1>Start writing</h1>
+    <input id="name" placeholder="Your name" autocomplete="name">
+    <button class="primary" id="start">Continue</button>
+    <p class="muted">Your notes save automatically as you type.</p>
+  </div>
+
+  <div id="app" hidden>
+    <header>
+      <h1>Notes — <span id="who"></span></h1>
+      <button id="device">Use on another device</button>
+      <button class="primary" id="new">New note</button>
+    </header>
+    <div class="layout">
+      <nav class="sidebar" id="list"></nav>
+      <main class="editor" id="editor">
+        <div class="empty">Create a note to get started.</div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const SAVE_DELAY_MS = 800;
+
+    // A ?key=... link from another device signs this browser in as the same writer.
+    const params = new URLSearchParams(location.search);
+    if (params.get('key')) {
+      try { localStorage.setItem('writerToken', params.get('key')); } catch {}
+      history.replaceState(null, '', location.pathname);
+    }
+    let token = null;
+    try { token = localStorage.getItem('writerToken'); } catch {}
+
+    let notes = [];
+    let currentId = null;
+    let saveTimer = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    async function api(method, url, body) {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-Writer-Token': token || '' },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!res.ok) throw Object.assign(new Error(res.statusText), { status: res.status });
+      return res.status === 204 ? null : res.json();
+    }
+
+    async function boot() {
+      if (token) {
+        try {
+          const me = await api('GET', '/api/me');
+          return showApp(me);
+        } catch (e) {
+          if (e.status !== 401) throw e;
+        }
+      }
+      $('signup').hidden = false;
+      $('name').focus();
+    }
+
+    $('start').onclick = async () => {
+      const name = $('name').value.trim();
+      if (!name) return $('name').focus();
+      const writer = await api('POST', '/api/writers', { name });
+      token = writer.token;
+      try { localStorage.setItem('writerToken', token); } catch {}
+      $('signup').hidden = true;
+      showApp(writer);
+    };
+    $('name').onkeydown = (e) => { if (e.key === 'Enter') $('start').click(); };
+
+    async function showApp(me) {
+      $('who').textContent = me.name;
+      $('app').hidden = false;
+      notes = await api('GET', '/api/notes');
+      renderList();
+      if (notes[0]) open(notes[0].id);
+    }
+
+    $('device').onclick = async () => {
+      const link = `${location.origin}/?key=${token}`;
+      try { await navigator.clipboard.writeText(link); alert('Link copied. Open it on your other device — keep it private, it signs in as you.'); }
+      catch { prompt('Open this link on your other device (keep it private):', link); }
+    };
+
+    $('new').onclick = async () => {
+      await flush();
+      const note = await api('POST', '/api/notes');
+      notes.unshift(note);
+      renderList();
+      open(note.id);
+      $('title').focus();
+    };
+
+    function renderList() {
+      $('list').innerHTML = '';
+      if (!notes.length) $('list').innerHTML = '<div class="empty">No notes yet</div>';
+      for (const n of notes) {
+        const el = document.createElement('div');
+        el.className = 'list-item' + (n.id === currentId ? ' active' : '');
+        el.innerHTML = '<div class="title"></div><div class="muted"></div>';
+        el.querySelector('.title').textContent = n.title || 'Untitled';
+        el.querySelector('.muted').textContent = new Date(n.updated_at).toLocaleString();
+        el.onclick = async () => { await flush(); open(n.id); };
+        $('list').appendChild(el);
+      }
+    }
+
+    function open(id) {
+      currentId = id;
+      const n = notes.find((x) => x.id === id);
+      $('editor').innerHTML = `
+        <input id="title" placeholder="Title">
+        <textarea id="body" placeholder="Write here…"></textarea>
+        <div class="toolbar">
+          <span class="status muted" id="status">Saved</span>
+          <button class="danger" id="delete">Delete</button>
+        </div>`;
+      $('title').value = n.title;
+      $('body').value = n.body;
+      $('title').oninput = $('body').oninput = scheduleSave;
+      $('delete').onclick = remove;
+      renderList();
+    }
+
+    function scheduleSave() {
+      $('status').textContent = 'Unsaved changes…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, SAVE_DELAY_MS);
+    }
+
+    async function save(checkpoint = false) {
+      saveTimer = null;
+      const n = notes.find((x) => x.id === currentId);
+      if (!n) return;
+      const title = $('title').value, body = $('body').value;
+      $('status').textContent = 'Saving…';
+      try {
+        const saved = await api('PUT', `/api/notes/${n.id}`, { title, body, checkpoint });
+        Object.assign(n, saved);
+        if ($('status')) $('status').textContent = 'Saved ' + new Date(saved.updated_at).toLocaleTimeString();
+        renderList();
+      } catch {
+        if ($('status')) $('status').textContent = 'Save failed — retrying…';
+        saveTimer = setTimeout(save, 3000);
+      }
+    }
+
+    // Save immediately (and snapshot a revision) before switching notes or leaving.
+    async function flush() {
+      if (saveTimer) { clearTimeout(saveTimer); await save(true); }
+    }
+    window.addEventListener('beforeunload', (e) => { if (saveTimer) { save(true); e.preventDefault(); } });
+
+    async function remove() {
+      if (!confirm('Delete this note?')) return;
+      clearTimeout(saveTimer); saveTimer = null;
+      await api('DELETE', `/api/notes/${currentId}`);
+      notes = notes.filter((x) => x.id !== currentId);
+      currentId = null;
+      $('editor').innerHTML = '<div class="empty">Create a note to get started.</div>';
+      if (notes[0]) open(notes[0].id); else renderList();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
