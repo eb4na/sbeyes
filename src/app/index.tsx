@@ -64,7 +64,7 @@ export default function MyThings() {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <Moon />
-                <Text style={styles.h1}>Hey {profile?.name || 'there'}</Text>
+                <Text style={styles.h1}>{profile?.name}</Text>
               </View>
               <Pressable onPress={signOut} hitSlop={8}
                 style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
