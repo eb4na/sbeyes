@@ -8,7 +8,8 @@ import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
 import { registerForPushNotifications } from '@/lib/push';
 import { supabase, type NoteWithAuthor } from '@/lib/supabase';
-import { Moon, NightSky } from '@/components/night-sky';
+import { NightSky } from '@/components/night-sky';
+import { ScreenTitle } from '@/components/screen-title';
 import { colors, editedSinceOpened, emotionFor, fonts, groupByEmotion, styles, timeAgo, type EmotionSection } from '@/lib/theme';
 
 type Item = NoteWithAuthor & { number: number };
@@ -92,13 +93,10 @@ export default function Reveal() {
           onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
         ListHeaderComponent={
           <View style={{ gap: 6, marginBottom: 10 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Moon />
-                <Text style={styles.h1}>Things to read</Text>
-              </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+              <ScreenTitle>Things to read</ScreenTitle>
               <Pressable onPress={signOut} hitSlop={8}
-                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                style={{ flexShrink: 0, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
               </Pressable>
             </View>
@@ -159,7 +157,7 @@ function HiddenCard({ item, onReveal }: { item: Item; onReveal: () => void }) {
           {item.emotion ? `Feeling ${emotion.label.toLowerCase()}` : 'No feeling picked yet'}
         </Text>
         <StressMeter value={item.stress} compact />
-        <Text style={styles.muted}>from {item.profiles?.name || 'someone'} · {timeAgo(item.created_at)}</Text>
+        <Text style={styles.muted} numberOfLines={1}>from {item.profiles?.name || 'someone'} · {timeAgo(item.created_at)}</Text>
       </View>
       <View style={{ height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.accent, justifyContent: 'center' }}>
         <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.onAccent }}>Reveal</Text>
@@ -191,9 +189,9 @@ function RevealedCard({ item }: { item: Item }) {
           </View>
         )}
         {!!item.body && <Text style={[styles.text, { fontSize: 15 }]} numberOfLines={3}>{item.body}</Text>}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', rowGap: 6, columnGap: 10, marginTop: 2 }}>
           <StressMeter value={item.stress} compact />
-          <Text style={styles.muted}>{timeAgo(item.updated_at)}</Text>
+          <Text style={styles.muted} numberOfLines={1}>{timeAgo(item.updated_at)}</Text>
         </View>
       </View>
     </Pressable>

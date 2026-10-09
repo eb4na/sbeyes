@@ -8,7 +8,8 @@ import { StressMeter } from '@/components/feelings';
 import { signOut, useAuth } from '@/lib/auth';
 import { useReaderName } from '@/lib/reader';
 import { supabase, type Note } from '@/lib/supabase';
-import { Moon, NightSky } from '@/components/night-sky';
+import { NightSky } from '@/components/night-sky';
+import { ScreenTitle } from '@/components/screen-title';
 import { colors, emotionFor, fonts, groupByEmotion, styles, timeAgo } from '@/lib/theme';
 
 // The writer's list: every individual thing they want to say.
@@ -61,13 +62,10 @@ export default function MyThings() {
           onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
         ListHeaderComponent={
           <View style={{ gap: 6, marginBottom: 10 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Moon />
-                <Text style={styles.h1}>{profile?.name}</Text>
-              </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+              <ScreenTitle>{profile?.name ?? ''}</ScreenTitle>
               <Pressable onPress={signOut} hitSlop={8}
-                style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
+                style={{ flexShrink: 0, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
                 <Text style={{ fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted }}>Sign out</Text>
               </Pressable>
             </View>

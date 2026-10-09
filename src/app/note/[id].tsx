@@ -134,6 +134,9 @@ export default function ThingEditor() {
               onChangeText={(title) => edit({ title })}
               placeholder="In a few words…"
               placeholderTextColor={colors.faint}
+              multiline
+              submitBehavior="blurAndSubmit"
+              scrollEnabled={false}
               style={{ fontFamily: fonts.display, fontSize: 26, color: emotion.color, paddingVertical: 4 }}
             />
             <TextInput

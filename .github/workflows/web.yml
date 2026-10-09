@@ -33,6 +33,8 @@ jobs:
         run: |
           npx expo export --platform web
           # Single-page app: serve index.html for any path, and keep _expo/ (Jekyll would hide it).
+          # Phone browsers: dark top bar (Android Chrome), no white flash or overscroll, home-screen friendly.
+          sed -i 's#<meta name="viewport"#<meta name="theme-color" content="\#060818" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black" /><meta name="apple-mobile-web-app-title" content="Dohyun Kim" /><style>html,body{background:\#060818}</style><meta name="viewport"#' dist/index.html
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
 
