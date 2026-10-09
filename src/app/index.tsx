@@ -50,7 +50,7 @@ export default function MyThings() {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <Moon />
-                <Text style={styles.h1}>Things to say</Text>
+                <Text style={styles.h1}>Hey {profile?.name || 'there'}</Text>
               </View>
               <Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}
                 style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.card, justifyContent: 'center' }}>
@@ -58,12 +58,12 @@ export default function MyThings() {
               </Pressable>
             </View>
             <Text style={[styles.muted, { fontSize: 15, lineHeight: 21 }]}>
-              One thing at a time. Everything saves as you type, and stays hidden until it’s opened on the other side.
+              Take your time. Put each thing on its own card. It saves as you type and stays hidden until it’s opened on the other side.
             </Text>
           </View>
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>Nothing yet. Tap the + to write the first thing on your mind.</Text>
+          <Text style={styles.empty}>Nothing yet. Tap “New thing” when you’re ready to write the first one.</Text>
         }
         renderItem={({ item, index }) => {
           const emotion = emotionFor(item.emotion);

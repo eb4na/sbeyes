@@ -1,0 +1,43 @@
+name: Web
+
+# Every push to main: build the web version and publish it to GitHub Pages
+# at https://eb4na.github.io/sbeyes/ (served from the gh-pages branch).
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build web
+        run: |
+          npx expo export --platform web
+          # Single-page app: serve index.html for any path, and keep _expo/ (Jekyll would hide it).
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages

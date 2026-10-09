@@ -48,6 +48,7 @@ export default function Reveal() {
   }, [notes]);
 
   const hidden = items.filter((n) => !n.revealed_at).length;
+  const writers = [...new Set(items.map((n) => n.profiles?.name).filter(Boolean))].join(', ');
 
   async function reveal(id: string) {
     // Flip it right away; the server confirms and the live update reloads.
@@ -87,7 +88,7 @@ export default function Reveal() {
                 <Text style={{ fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.accent }}>Live</Text>
               </View>
               <Text style={[styles.muted, { fontSize: 14 }]}>
-                {hidden} hidden · {items.length - hidden} opened
+                {writers ? `From ${writers} · ` : ''}{hidden} hidden · {items.length - hidden} opened
               </Text>
             </View>
           </View>

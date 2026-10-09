@@ -42,6 +42,9 @@
       "expo-web-browser",
       "expo-font"
     ],
-    "scheme": "sbeyes"
+    "scheme": "sbeyes",
+    "experiments": {
+      "baseUrl": "/sbeyes"
+    }
   }
 }

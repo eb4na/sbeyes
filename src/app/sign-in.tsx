@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { signInWithGoogle } from '@/lib/auth';
+import { signInWithGoogle, webAppUrl } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, fonts, styles } from '@/lib/theme';
@@ -20,7 +20,11 @@ export default function SignIn() {
     setMessage(null);
     const { data, error } =
       mode === 'sign-up'
-        ? await supabase.auth.signUp({ email, password, options: { data: { name: name.trim() } } })
+        ? await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { name: name.trim() }, emailRedirectTo: Platform.OS === 'web' ? webAppUrl() : undefined },
+          })
         : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) setMessage(error.message);

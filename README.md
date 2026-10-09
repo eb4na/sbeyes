@@ -8,6 +8,11 @@ Revealed cards update live and keep earlier versions.
 
 Backend: Supabase project `sbeyes` (schema in `supabase/migrations/`).
 
+## Use it in a browser
+
+Every push to `main` publishes the web version to **https://eb4na.github.io/sbeyes/**
+(`.github/workflows/web.yml`, served from the `gh-pages` branch).
+
 ## Run it on your iPhone (fastest)
 
 ```sh
@@ -33,17 +38,11 @@ The app's **Continue with Google** button needs Google enabled in Supabase:
    - `exp://**` (Expo Go and the Simulator while developing)
    - `http://localhost:8081` (web preview)
 
-## Make yourself the admin
+## Who is who
 
-1. Create an account in the app.
-2. In the Supabase dashboard → SQL editor, run:
-
-   ```sql
-   update public.profiles set is_admin = true
-   where id = (select id from auth.users where email = 'you@example.com');
-   ```
-
-3. Sign out and back in. You'll land on **Things to read**.
+The reader's email lives in the private `private.settings` table (not in this
+repo). Signing up with that email makes the reader account; any other email
+becomes the writer, named Dohyun.
 
 ## Upload to TestFlight
 

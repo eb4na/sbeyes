@@ -6,13 +6,16 @@ import { Platform } from 'react-native';
 
 import { supabase, type Profile } from './supabase';
 
+// The web app's address, including the GitHub Pages subpath.
+export const webAppUrl = () => `${window.location.origin}${process.env.EXPO_BASE_URL ?? ''}/`;
+
 // Opens Google sign-in in a secure browser sheet and finishes the session when
 // Google redirects back. Returns an error message, or null on success/cancel.
 export async function signInWithGoogle(): Promise<string | null> {
   if (Platform.OS === 'web') {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: webAppUrl() },
     });
     return error?.message ?? null;
   }
