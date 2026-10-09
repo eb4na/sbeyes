@@ -44,9 +44,6 @@
       "expo-notifications"
     ],
     "scheme": "sbeyes",
-    "experiments": {
-      "baseUrl": "/sbeyes"
-    },
     "backgroundColor": "#060818"
   }
 }

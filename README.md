@@ -10,8 +10,15 @@ Backend: Supabase project `sbeyes` (schema in `supabase/migrations/`).
 
 ## Use it in a browser
 
-Every push to `main` publishes the web version to **https://eb4na.github.io/sbeyes/**
-(`.github/workflows/web.yml`, served from the `gh-pages` branch).
+The web version deploys on every push to `main`:
+
+- **Vercel** (connected to this repo): builds with `vercel.json` and serves the
+  site from the root of its domain.
+- **GitHub Pages**: `.github/workflows/web.yml` publishes to the `gh-pages`
+  branch for https://eb4na.github.io/sbeyes/ (needs Settings → Pages → Deploy
+  from a branch → gh-pages). It builds with `WEB_BASE_URL=/sbeyes`.
+
+Both run `scripts/web-postbuild.sh` for the phone-browser tweaks.
 
 ## Run it on your iPhone (fastest)
 
