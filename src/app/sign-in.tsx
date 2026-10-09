@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { signInWithGoogle, webAppUrl } from '@/lib/auth';
+import { isGoogleEnabled, signInWithGoogle, webAppUrl } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { Moon, NightSky } from '@/components/night-sky';
 import { colors, fonts, styles } from '@/lib/theme';
@@ -14,6 +14,9 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [googleOn, setGoogleOn] = useState(false);
+
+  useEffect(() => { isGoogleEnabled().then(setGoogleOn); }, []);
 
   async function submit() {
     setBusy(true);
@@ -55,23 +58,27 @@ export default function SignIn() {
           A place to say what’s on your mind, one thing at a time. Everything saves as you go.
         </Text>
 
-        <Pressable
-          onPress={google}
-          disabled={busy}
-          style={{
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-            backgroundColor: '#fff', borderColor: '#dadce0', borderWidth: 1, borderRadius: 28,
-            paddingVertical: 13, opacity: busy ? 0.5 : 1,
-          }}>
-          <Image source={require('../../assets/google-g.png')} style={{ width: 20, height: 20 }} />
-          <Text style={{ color: '#1f1f1f', fontSize: 16, fontFamily: fonts.bodyHeavy }}>Continue with Google</Text>
-        </Pressable>
+        {googleOn && (
+          <>
+          <Pressable
+            onPress={google}
+            disabled={busy}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+              backgroundColor: '#fff', borderColor: '#dadce0', borderWidth: 1, borderRadius: 28,
+              paddingVertical: 13, opacity: busy ? 0.5 : 1,
+            }}>
+            <Image source={require('../../assets/google-g.png')} style={{ width: 20, height: 20 }} />
+            <Text style={{ color: '#1f1f1f', fontSize: 16, fontFamily: fonts.bodyHeavy }}>Continue with Google</Text>
+          </Pressable>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-          <Text style={styles.muted}>or use email</Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-        </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+            <Text style={styles.muted}>or use email</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+          </View>
+          </>
+        )}
 
         {mode === 'sign-up' && (
           <TextInput style={styles.input} placeholder="Your name" placeholderTextColor={colors.muted}

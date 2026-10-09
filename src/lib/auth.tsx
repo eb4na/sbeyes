@@ -6,6 +6,20 @@ import { Platform } from 'react-native';
 
 import { supabase, type Profile } from './supabase';
 
+// Whether Google sign-in is turned on in Supabase (Authentication → Providers).
+// The button stays hidden until it is, instead of opening an error page.
+export async function isGoogleEnabled(): Promise<boolean> {
+  try {
+    const res = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
+      headers: { apikey: process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '' },
+    });
+    const settings = await res.json();
+    return settings?.external?.google === true;
+  } catch {
+    return false;
+  }
+}
+
 // The web app's address, including the GitHub Pages subpath.
 export const webAppUrl = () => `${window.location.origin}${process.env.EXPO_BASE_URL ?? ''}/`;
 
