@@ -66,6 +66,17 @@ export default function ThingEditor() {
     });
   });
 
+  // Save anything pending right now, then go back to the list.
+  async function done() {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    await save();
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  }
+
   function confirmDelete() {
     const remove = async () => {
       if (timer.current) clearTimeout(timer.current);
@@ -165,6 +176,14 @@ export default function ThingEditor() {
               thumbColor="#fff"
             />
           </View>
+
+          <Pressable
+            onPress={done}
+            disabled={status === 'saving'}
+            accessibilityRole="button"
+            style={[styles.button, { marginTop: 4, shadowColor: colors.accent, shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 0 } }]}>
+            <Text style={[styles.buttonText, { fontSize: 17 }]}>{status === 'saving' ? 'Saving…' : 'Done'}</Text>
+          </Pressable>
         </ScrollView>
       )}
     </KeyboardAvoidingView>
